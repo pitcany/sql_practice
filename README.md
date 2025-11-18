@@ -41,60 +41,78 @@ sql_interview_prep/
 
 ## Prerequisites
 
-- Python 3.8 or higher
-- PostgreSQL 12 or higher
-- pip (Python package manager)
+Before you begin, ensure you have the following installed:
+
+- **Python 3.7+**: [Download Python](https://www.python.org/downloads/)
+- **PostgreSQL 12+**: [Download PostgreSQL](https://www.postgresql.org/download/)
+- **pip**: Python package installer (usually comes with Python)
 
 ## Installation
 
-### 1. Install PostgreSQL
+### 1. Clone or Download the Repository
 
-#### Ubuntu/Debian
 ```bash
-sudo apt update
-sudo apt install postgresql postgresql-contrib
+git clone <repository-url>
+cd sql_practice
 ```
 
-#### macOS (using Homebrew)
+### 2. Install Python Dependencies
+
 ```bash
-brew install postgresql
-brew services start postgresql
+pip install -r requirements.txt
 ```
 
-#### Windows
-Download and install from [PostgreSQL official website](https://www.postgresql.org/download/windows/)
+This will install:
+- `psycopg2-binary`: PostgreSQL database adapter
+- `python-dotenv`: Environment variable management
 
-### 2. Create Database and User
+### 3. Set Up PostgreSQL Database
 
-Connect to PostgreSQL as superuser:
+#### Option A: Create Database Using psql
+
 ```bash
-sudo -u postgres psql
-```
+# Connect to PostgreSQL as superuser
+psql -U postgres
 
-Run the following commands:
-```sql
+# In psql prompt:
+CREATE DATABASE interview_db;
 CREATE USER sql_interview WITH PASSWORD 'your_password';
-CREATE DATABASE interview_db OWNER sql_interview;
 GRANT ALL PRIVILEGES ON DATABASE interview_db TO sql_interview;
+
+# Connect to the new database
+\c interview_db
+
+# Grant schema privileges (required for PostgreSQL 15+)
+GRANT CREATE ON SCHEMA public TO sql_interview;
+GRANT USAGE ON SCHEMA public TO sql_interview;
 \q
 ```
 
-### 3. Clone and Setup
+**Note**: The schema privilege grants are essential for PostgreSQL 15 and later versions, which removed default CREATE privileges on the `public` schema for security reasons.
+
+#### Option B: Using pgAdmin
+
+1. Open pgAdmin
+2. Right-click "Databases" → Create → Database
+3. Name: `interview_db`
+4. Create a new user: `sql_interview` with password
+5. Grant all privileges on the database to this user
+6. **Important for PostgreSQL 15+**: Open the Query Tool and run:
+   ```sql
+   GRANT CREATE ON SCHEMA public TO sql_interview;
+   GRANT USAGE ON SCHEMA public TO sql_interview;
+   ```
+
+### 4. Configure Environment Variables
+
+Create a `.env` file in the project root:
 
 ```bash
-cd sql_interview_prep
-
-# Install Python dependencies
-pip install -r requirements.txt
-
-# Copy and configure environment variables
 cp env.example .env
-# Edit .env with your database credentials
 ```
 
-### 4. Configure Environment
+Edit `.env` with your database credentials:
 
-Edit the `.env` file with your database credentials:
 ```
 POSTGRES_DB=interview_db
 POSTGRES_USER=sql_interview
@@ -103,7 +121,7 @@ POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 ```
 
-## Usage
+**Note**: Replace `your_password` with your actual PostgreSQL password.
 
 You can use either the **CLI** (command-line) or **GUI** (graphical) version of the application.
 
@@ -116,10 +134,17 @@ python app_gui.py
 
 **CLI Version:**
 ```bash
-python app.py
+psql -U sql_interview -d interview_db -f setup_db.sql
 ```
 
-### First-Time Setup
+This will create the following tables with sample data:
+- **Departments**: 5 departments with budgets and locations
+- **Employees**: 15 employees with salaries and managers
+- **Projects**: 5 projects with different statuses
+- **Employee_Projects**: Many-to-many relationships
+- **Customers**: 10 customers from various countries
+- **Products**: 15 products across multiple categories
+- **Orders**: 20 orders with different statuses
 
 **For GUI Version:**
 1. Launch the app: `python app_gui.py`
@@ -132,6 +157,18 @@ python app.py
 2. Select option **5** (Setup Database)
 3. Confirm the setup by typing `yes`
 4. Test connection with option **6** (Test Database Connection)
+
+**Starting the CLI:**
+```bash
+python app.py
+```
+
+Or make it executable:
+
+```bash
+chmod +x app.py
+./app.py
+```
 
 ### CLI Main Menu Options
 
@@ -158,18 +195,21 @@ python app.py
 ### CLI Example Session
 
 ```
+============================================================
 SQL INTERVIEW PREP - Main Menu
 ============================================================
 1. Browse Questions
 2. Practice by Difficulty
 3. Random Question
 4. View Statistics
-5. Setup Database
-6. Test Database Connection
-7. Exit
+5. SQL Sandbox (Free Query Mode)
+6. View Database Schema
+7. Setup Database
+8. Test Database Connection
+9. Exit
 ============================================================
 
-Enter your choice (1-7): 2
+Enter your choice (1-9): 2
 
 Select difficulty:
 1. Easy
@@ -386,91 +426,238 @@ FROM employees;
 5. **Practice Regularly**: Consistent practice improves retention
 6. **Experiment**: Try different approaches to solve the same problem
 
-## Troubleshooting
+## Project Structure (Detailed)
 
-### Connection Issues
-
-If you get connection errors:
-
-1. Verify PostgreSQL is running:
-   ```bash
-   sudo systemctl status postgresql  # Linux
-   brew services list                 # macOS
-   ```
-
-2. Check your `.env` file has correct credentials
-
-3. Test connection manually:
-   ```bash
-   psql -U sql_interview -d interview_db -h localhost
-   ```
-
-### Permission Errors
-
-If you get permission errors when setting up the database:
-
-```sql
--- As PostgreSQL superuser:
-GRANT ALL PRIVILEGES ON DATABASE interview_db TO sql_interview;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO sql_interview;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO sql_interview;
+```
+sql_practice/
+├── app.py                      # Main application entry point
+├── utils.py                    # Database utilities and query execution
+├── setup_db.sql                # Database schema and sample data
+├── requirements.txt            # Python dependencies
+├── env.example                 # Environment variable template
+├── .env                        # Your configuration (create this)
+├── data/                       # Question files
+│   ├── easy_questions.json     # Beginner-level questions
+│   ├── medium_questions.json   # Intermediate questions
+│   └── hard_questions.json     # Advanced questions
+└── README.md                   # This file
 ```
 
-### Module Not Found
+## Adding Custom Questions
 
-If you get module import errors:
+You can add your own questions to the JSON files in the `data/` directory.
 
-```bash
-pip install -r requirements.txt --upgrade
-```
-
-## Advanced Features
-
-### Adding Custom Questions
-
-Create your own questions by adding them to the JSON files in the `data/` directory:
+### Question Format
 
 ```json
 {
-    "id": 31,
+    "id": 100,
     "title": "Your Question Title",
-    "description": "Question description",
-    "hint": "Optional hint",
-    "difficulty": "medium",
-    "topics": ["joins", "aggregation"],
-    "solution": "SELECT ...",
+    "description": "Detailed description of what the query should do.",
+    "hint": "Optional hint for the user",
+    "difficulty": "easy",
+    "topics": ["topic1", "topic2"],
+    "solution": "SELECT * FROM table_name;",
     "expected_columns": ["col1", "col2"]
 }
 ```
 
-### Extending the Database
+### Required Fields
 
-You can add more tables or data to `setup_db.sql` to create additional practice scenarios.
+- **id**: Unique identifier (integer)
+- **title**: Short, descriptive title
+- **description**: Full question description
+- **difficulty**: "easy", "medium", or "hard"
+- **solution**: The correct SQL query
+- **topics**: Array of topic tags (e.g., ["joins", "aggregation"])
+
+### Optional Fields
+
+- **hint**: Helpful hint for users
+- **expected_columns**: Array of column names in the result
+
+## Database Schema Overview
+
+### Employees & Departments
+- Practice basic queries, joins, and aggregations
+- Includes hierarchical data (employee-manager relationships)
+- Sample salaries and hire dates for date/numeric operations
+
+### Projects & Employee_Projects
+- Many-to-many relationship practice
+- Complex joins and aggregations
+- Project statuses and budget analysis
+
+### Customers, Products & Orders
+- E-commerce style data
+- Practice with timestamps and date filtering
+- Order status tracking and revenue calculations
+
+## Troubleshooting
+
+### "Connection failed" Error
+
+**Possible causes**:
+1. PostgreSQL is not running
+2. Incorrect credentials in `.env`
+3. Database doesn't exist
+4. Firewall blocking port 5432
+
+**Solutions**:
+```bash
+# Check if PostgreSQL is running (Linux/Mac)
+sudo systemctl status postgresql
+
+# Or (Mac with Homebrew)
+brew services list
+
+# Start PostgreSQL if needed
+sudo systemctl start postgresql
+brew services start postgresql
+
+# Test connection manually
+psql -U sql_interview -d interview_db
+```
+
+### "No questions loaded" Error
+
+**Cause**: Missing or corrupted JSON files
+
+**Solution**:
+- Verify all three JSON files exist in the `data/` directory
+- Check JSON syntax is valid
+- Ensure proper permissions to read files
+
+### "Table does not exist" Error
+
+**Cause**: Database not initialized
+
+**Solution**:
+- Run option **5. Setup Database** from the main menu
+- Or manually run: `psql -U sql_interview -d interview_db -f setup_db.sql`
+
+### Import Errors (psycopg2, dotenv)
+
+**Cause**: Dependencies not installed
+
+**Solution**:
+```bash
+pip install -r requirements.txt
+
+# If using Python 3 specifically
+pip3 install -r requirements.txt
+```
+
+### Permission Denied Errors
+
+#### "permission denied for schema public" (PostgreSQL 15+)
+
+**Cause**: PostgreSQL 15 and later versions removed default CREATE privileges on the `public` schema as a security enhancement. This is a breaking change from earlier versions.
+
+**Symptoms**:
+- Error message: `permission denied for schema public`
+- Occurs when running the database setup (option 5 in the app)
+- Tables cannot be created even though the user exists
+
+**Solution**:
+```bash
+# Connect to the database (without specifying a user, uses your system user)
+psql -d interview_db
+
+# Grant necessary schema privileges
+GRANT CREATE ON SCHEMA public TO sql_interview;
+GRANT USAGE ON SCHEMA public TO sql_interview;
+
+# If needed, reset the user password
+ALTER USER sql_interview WITH PASSWORD 'your_password';
+```
+
+**Why this happens**: Prior to PostgreSQL 15, all users had CREATE privilege on the `public` schema by default through the `PUBLIC` role. This was changed for security reasons, requiring explicit privilege grants.
+
+#### General Permission Issues
+
+**Cause**: Other insufficient database privileges
+
+**Solution**:
+```sql
+-- Connect as superuser
+psql -U postgres
+
+-- Grant database-level privileges
+GRANT ALL PRIVILEGES ON DATABASE interview_db TO sql_interview;
+
+-- Grant privileges on existing tables and sequences (if any)
+\c interview_db
+GRANT ALL ON ALL TABLES IN SCHEMA public TO sql_interview;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO sql_interview;
+```
+
+## Tips for Success
+
+1. **Start with Easy Questions**: Build confidence before tackling harder problems
+2. **Read Carefully**: Pay attention to column names and sorting requirements
+3. **Use Hints Wisely**: Try on your own first, then use hints if stuck
+4. **Analyze Incorrect Answers**: Learn from the differences between your query and the solution
+5. **Practice Regularly**: Consistency is key to mastering SQL
+6. **Experiment**: The database is safe to query - your queries won't modify data
+7. **Review Solutions**: Even if you get it right, check the official solution for alternative approaches
+
+## Advanced Usage
+
+### Running Specific Query Files
+
+You can test queries directly in PostgreSQL:
+
+```bash
+psql -U sql_interview -d interview_db
+```
+
+### Backing Up Your Progress
+
+Since statistics are session-based, consider keeping a practice log:
+
+```bash
+# Export your statistics to a file (manual tracking)
+# Or extend the app to save stats to a file
+```
+
+### Customizing the Database
+
+You can modify `setup_db.sql` to add your own tables and data:
+
+1. Add your table definitions
+2. Insert sample data
+3. Re-run the setup: `psql -U sql_interview -d interview_db -f setup_db.sql`
+
+## Learning Resources
+
+- [PostgreSQL Official Documentation](https://www.postgresql.org/docs/)
+- [SQL Style Guide](https://www.sqlstyle.guide/)
+- [PostgreSQL Tutorial](https://www.postgresqltutorial.com/)
+- [SQL Joins Visualizer](https://sql-joins.leopard.in.ua/)
 
 ## Contributing
 
-Feel free to contribute by:
-- Adding new questions
-- Improving existing questions
-- Enhancing the CLI interface
-- Adding new features
-- Fixing bugs
+Want to add more questions? Here's how:
+
+1. Add your question to the appropriate JSON file (`data/easy_questions.json`, etc.)
+2. Follow the question format shown above
+3. Test your question in the app
+4. Ensure the solution produces the expected results
 
 ## License
 
-This project is open source and available for educational purposes.
+This project is created for educational purposes. Feel free to use and modify it for learning SQL.
 
-## Resources
+## Support
 
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
-- [SQL Tutorial - W3Schools](https://www.w3schools.com/sql/)
-- [PostgreSQL Exercises](https://pgexercises.com/)
-- [LeetCode Database Problems](https://leetcode.com/problemset/database/)
+If you encounter issues:
 
-## Acknowledgments
-
-Designed for SQL interview preparation with a focus on practical, real-world scenarios commonly encountered in technical interviews.
+1. Check the Troubleshooting section above
+2. Verify your `.env` configuration
+3. Ensure PostgreSQL is running and accessible
+4. Test the database connection using option 6 in the menu
 
 ---
 
-**Happy Learning! Good luck with your SQL interviews!**
+**Happy SQL practicing! Good luck with your interviews! 🎯**
