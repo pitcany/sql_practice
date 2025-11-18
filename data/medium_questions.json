@@ -1,0 +1,102 @@
+[
+    {
+        "id": 11,
+        "title": "Average Salary per Department",
+        "description": "Write a query to calculate the average salary for each department. Include the department name.",
+        "hint": "Use JOIN and GROUP BY",
+        "difficulty": "medium",
+        "topics": ["joins", "aggregation", "group by"],
+        "solution": "SELECT d.name AS department, AVG(e.salary) AS avg_salary FROM employees e JOIN departments d ON e.department_id = d.id GROUP BY d.id, d.name ORDER BY avg_salary DESC;",
+        "expected_columns": ["department", "avg_salary"]
+    },
+    {
+        "id": 12,
+        "title": "Customer Order Count",
+        "description": "Write a query to find how many orders each customer has placed. Include customer name and order count.",
+        "hint": "Join customers with orders and use COUNT with GROUP BY",
+        "difficulty": "medium",
+        "topics": ["joins", "aggregation", "group by"],
+        "solution": "SELECT c.name, COUNT(o.order_id) AS order_count FROM customers c LEFT JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id, c.name ORDER BY order_count DESC;",
+        "expected_columns": ["name", "order_count"]
+    },
+    {
+        "id": 13,
+        "title": "Total Revenue per Product",
+        "description": "Write a query to calculate total revenue (quantity * price) for each product. Include product name and total revenue.",
+        "hint": "Join orders with products, calculate revenue, and group by product",
+        "difficulty": "medium",
+        "topics": ["joins", "aggregation", "calculations"],
+        "solution": "SELECT p.name, SUM(o.quantity * p.price) AS total_revenue FROM orders o JOIN products p ON o.product_id = p.product_id GROUP BY p.product_id, p.name ORDER BY total_revenue DESC;",
+        "expected_columns": ["name", "total_revenue"]
+    },
+    {
+        "id": 14,
+        "title": "Employees and Their Managers",
+        "description": "Write a query to list all employees along with their manager's name. Use a self-join.",
+        "hint": "Join employees table with itself",
+        "difficulty": "medium",
+        "topics": ["self-join"],
+        "solution": "SELECT e.first_name || ' ' || e.last_name AS employee_name, m.first_name || ' ' || m.last_name AS manager_name FROM employees e LEFT JOIN employees m ON e.manager_id = m.id ORDER BY e.last_name;",
+        "expected_columns": ["employee_name", "manager_name"]
+    },
+    {
+        "id": 15,
+        "title": "Products Never Ordered",
+        "description": "Write a query to find all products that have never been ordered.",
+        "hint": "Use LEFT JOIN and check for NULL",
+        "difficulty": "medium",
+        "topics": ["joins", "filtering"],
+        "solution": "SELECT p.name, p.price, p.category FROM products p LEFT JOIN orders o ON p.product_id = o.product_id WHERE o.order_id IS NULL ORDER BY p.name;",
+        "expected_columns": ["name", "price", "category"]
+    },
+    {
+        "id": 16,
+        "title": "Department Employee Count",
+        "description": "Write a query to count the number of employees in each department. Include departments with zero employees.",
+        "hint": "Use LEFT JOIN from departments to employees",
+        "difficulty": "medium",
+        "topics": ["joins", "aggregation", "group by"],
+        "solution": "SELECT d.name, COUNT(e.id) AS employee_count FROM departments d LEFT JOIN employees e ON d.id = e.department_id GROUP BY d.id, d.name ORDER BY employee_count DESC;",
+        "expected_columns": ["name", "employee_count"]
+    },
+    {
+        "id": 17,
+        "title": "Top 3 Customers by Spending",
+        "description": "Write a query to find the top 3 customers by total spending (quantity * price). Include customer name and total spent.",
+        "hint": "Join customers, orders, and products; use SUM and LIMIT",
+        "difficulty": "medium",
+        "topics": ["joins", "aggregation", "limit"],
+        "solution": "SELECT c.name, SUM(o.quantity * p.price) AS total_spent FROM customers c JOIN orders o ON c.customer_id = o.customer_id JOIN products p ON o.product_id = p.product_id GROUP BY c.customer_id, c.name ORDER BY total_spent DESC LIMIT 3;",
+        "expected_columns": ["name", "total_spent"]
+    },
+    {
+        "id": 18,
+        "title": "Products by Category Count",
+        "description": "Write a query to count how many products are in each category.",
+        "hint": "Use GROUP BY on category",
+        "difficulty": "medium",
+        "topics": ["aggregation", "group by"],
+        "solution": "SELECT category, COUNT(*) AS product_count FROM products GROUP BY category ORDER BY product_count DESC;",
+        "expected_columns": ["category", "product_count"]
+    },
+    {
+        "id": 19,
+        "title": "Employees Hired in 2020",
+        "description": "Write a query to find all employees hired in the year 2020. Include their name, department name, and hire date.",
+        "hint": "Use EXTRACT or DATE_PART to get year from hire_date",
+        "difficulty": "medium",
+        "topics": ["date functions", "joins"],
+        "solution": "SELECT e.first_name || ' ' || e.last_name AS employee_name, d.name AS department, e.hire_date FROM employees e JOIN departments d ON e.department_id = d.id WHERE EXTRACT(YEAR FROM e.hire_date) = 2020 ORDER BY e.hire_date;",
+        "expected_columns": ["employee_name", "department", "hire_date"]
+    },
+    {
+        "id": 20,
+        "title": "Average Order Quantity per Product",
+        "description": "Write a query to calculate the average quantity ordered for each product. Include product name and average quantity.",
+        "hint": "Join orders and products, use AVG with GROUP BY",
+        "difficulty": "medium",
+        "topics": ["joins", "aggregation"],
+        "solution": "SELECT p.name, AVG(o.quantity) AS avg_quantity FROM orders o JOIN products p ON o.product_id = p.product_id GROUP BY p.product_id, p.name ORDER BY avg_quantity DESC;",
+        "expected_columns": ["name", "avg_quantity"]
+    }
+]
