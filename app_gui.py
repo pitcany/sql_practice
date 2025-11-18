@@ -66,6 +66,8 @@ class SQLInterviewGUI:
         # Database menu
         db_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Database", menu=db_menu)
+        db_menu.add_command(label="View Schema", command=self.show_schema)
+        db_menu.add_separator()
         db_menu.add_command(label="Setup Database", command=self.setup_database)
         db_menu.add_command(label="Test Connection", command=self.test_connection)
 
@@ -76,8 +78,24 @@ class SQLInterviewGUI:
 
     def setup_ui(self):
         """Setup main UI components"""
+        # Create notebook (tabs)
+        self.notebook = ttk.Notebook(self.root)
+        self.notebook.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+        # Tab 1: Questions Practice
+        questions_tab = ttk.Frame(self.notebook)
+        self.notebook.add(questions_tab, text="Practice Questions")
+        self.setup_questions_tab(questions_tab)
+
+        # Tab 2: SQL Sandbox
+        sandbox_tab = ttk.Frame(self.notebook)
+        self.notebook.add(sandbox_tab, text="SQL Sandbox")
+        self.setup_sandbox_tab(sandbox_tab)
+
+    def setup_questions_tab(self, parent):
+        """Setup questions practice tab"""
         # Main container
-        main_container = ttk.PanedWindow(self.root, orient=tk.HORIZONTAL)
+        main_container = ttk.PanedWindow(parent, orient=tk.HORIZONTAL)
         main_container.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
         # Left panel - Question browser
@@ -605,6 +623,298 @@ class SQLInterviewGUI:
         except Exception as e:
             messagebox.showerror("Error", f"Connection test failed: {str(e)}")
 
+    def setup_sandbox_tab(self, parent):
+        """Setup SQL sandbox tab"""
+        # Main container
+        container = ttk.Frame(parent)
+        container.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Title
+        title_label = ttk.Label(
+            container,
+            text="SQL Sandbox - Free Query Mode",
+            font=("Arial", 18, "bold")
+        )
+        title_label.pack(pady=10)
+
+        instructions = ttk.Label(
+            container,
+            text="Execute any SQL query against the database. Explore tables, run joins, test your ideas!",
+            font=("Arial", 10)
+        )
+        instructions.pack(pady=5)
+
+        # Button frame for quick actions
+        button_frame = ttk.Frame(container)
+        button_frame.pack(fill=tk.X, pady=10)
+
+        ttk.Button(
+            button_frame,
+            text="View Schema",
+            command=self.show_schema
+        ).pack(side=tk.LEFT, padx=5)
+
+        ttk.Button(
+            button_frame,
+            text="Clear Query",
+            command=self.clear_sandbox_query
+        ).pack(side=tk.LEFT, padx=5)
+
+        # Sample queries dropdown
+        ttk.Label(button_frame, text="Sample Queries:").pack(side=tk.LEFT, padx=(20, 5))
+
+        self.sample_query_var = tk.StringVar()
+        sample_queries = {
+            "Select all employees": "SELECT * FROM employees LIMIT 10;",
+            "Count by department": "SELECT d.name, COUNT(e.id) AS emp_count\nFROM departments d\nLEFT JOIN employees e ON d.id = e.department_id\nGROUP BY d.id, d.name;",
+            "Top selling products": "SELECT p.name, SUM(o.quantity * p.price) AS revenue\nFROM products p\nJOIN orders o ON p.product_id = o.product_id\nGROUP BY p.product_id, p.name\nORDER BY revenue DESC\nLIMIT 5;",
+            "Employee hierarchy": "SELECT e.first_name || ' ' || e.last_name AS employee,\n       m.first_name || ' ' || m.last_name AS manager\nFROM employees e\nLEFT JOIN employees m ON e.manager_id = m.id;"
+        }
+
+        sample_combo = ttk.Combobox(
+            button_frame,
+            textvariable=self.sample_query_var,
+            values=list(sample_queries.keys()),
+            state="readonly",
+            width=30
+        )
+        sample_combo.pack(side=tk.LEFT, padx=5)
+
+        def load_sample_query(event):
+            query_name = self.sample_query_var.get()
+            if query_name in sample_queries:
+                self.sandbox_editor.delete(1.0, tk.END)
+                self.sandbox_editor.insert(1.0, sample_queries[query_name])
+
+        sample_combo.bind('<<ComboboxSelected>>', load_sample_query)
+
+        # Query editor frame
+        editor_frame = ttk.LabelFrame(container, text="SQL Query Editor", padding=10)
+        editor_frame.pack(fill=tk.BOTH, expand=True, pady=10)
+
+        self.sandbox_editor = scrolledtext.ScrolledText(
+            editor_frame,
+            height=15,
+            font=("Courier New", 11),
+            wrap=tk.WORD,
+            undo=True
+        )
+        self.sandbox_editor.pack(fill=tk.BOTH, expand=True)
+
+        # Execute button
+        execute_frame = ttk.Frame(editor_frame)
+        execute_frame.pack(fill=tk.X, pady=10)
+
+        ttk.Button(
+            execute_frame,
+            text="▶ Execute Query",
+            command=self.execute_sandbox_query
+        ).pack(side=tk.LEFT, padx=5)
+
+        self.sandbox_status = ttk.Label(
+            execute_frame,
+            text="",
+            font=("Arial", 11, "bold")
+        )
+        self.sandbox_status.pack(side=tk.LEFT, padx=10)
+
+        # Results frame
+        results_frame = ttk.LabelFrame(container, text="Query Results", padding=10)
+        results_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+
+        # Results table with scrollbars
+        table_frame = ttk.Frame(results_frame)
+        table_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Vertical scrollbar
+        v_scrollbar = ttk.Scrollbar(table_frame, orient=tk.VERTICAL)
+        v_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # Horizontal scrollbar
+        h_scrollbar = ttk.Scrollbar(table_frame, orient=tk.HORIZONTAL)
+        h_scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
+
+        # Treeview for results
+        self.sandbox_results_tree = ttk.Treeview(
+            table_frame,
+            yscrollcommand=v_scrollbar.set,
+            xscrollcommand=h_scrollbar.set,
+            show="tree headings"
+        )
+        self.sandbox_results_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        v_scrollbar.config(command=self.sandbox_results_tree.yview)
+        h_scrollbar.config(command=self.sandbox_results_tree.xview)
+
+    def clear_sandbox_query(self):
+        """Clear sandbox query editor"""
+        self.sandbox_editor.delete(1.0, tk.END)
+        self.sandbox_status.config(text="")
+        for item in self.sandbox_results_tree.get_children():
+            self.sandbox_results_tree.delete(item)
+        self.sandbox_results_tree["columns"] = ()
+
+    def execute_sandbox_query(self):
+        """Execute query in sandbox"""
+        query = self.sandbox_editor.get(1.0, tk.END).strip()
+
+        if not query:
+            messagebox.showwarning("Warning", "Please enter a SQL query")
+            return
+
+        # Execute query
+        self.sandbox_status.config(text="⏳ Executing...", foreground=self.colors['warning'])
+        self.root.update()
+
+        result = utils.run_user_query(query)
+
+        # Clear previous results
+        for item in self.sandbox_results_tree.get_children():
+            self.sandbox_results_tree.delete(item)
+        self.sandbox_results_tree["columns"] = ()
+
+        if not result["success"]:
+            self.sandbox_status.config(
+                text=f"❌ Error",
+                foreground=self.colors['error']
+            )
+            messagebox.showerror("Query Error", result['error'])
+            return
+
+        # Display results
+        if result["results"]:
+            self.sandbox_status.config(
+                text=f"✅ Success - {result['row_count']} rows",
+                foreground=self.colors['success']
+            )
+
+            # Configure columns
+            self.sandbox_results_tree["columns"] = result["columns"]
+            self.sandbox_results_tree.heading("#0", text="Row")
+
+            for col in result["columns"]:
+                self.sandbox_results_tree.heading(col, text=col)
+                self.sandbox_results_tree.column(col, width=150)
+
+            # Add rows
+            for idx, row in enumerate(result["results"], 1):
+                values = [str(val) if val is not None else "NULL" for val in row]
+                self.sandbox_results_tree.insert("", tk.END, text=str(idx), values=values)
+        else:
+            self.sandbox_status.config(
+                text="✅ Query executed (no results)",
+                foreground=self.colors['success']
+            )
+
+    def show_schema(self):
+        """Show database schema in a new window"""
+        schema_window = tk.Toplevel(self.root)
+        schema_window.title("Database Schema")
+        schema_window.geometry("900x700")
+
+        # Title
+        ttk.Label(
+            schema_window,
+            text="Database Schema",
+            font=("Arial", 16, "bold")
+        ).pack(pady=10)
+
+        # Create scrolled text for schema
+        schema_text = scrolledtext.ScrolledText(
+            schema_window,
+            font=("Courier New", 10),
+            wrap=tk.WORD
+        )
+        schema_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Get schema information
+        schema_info = self.get_schema_info()
+        schema_text.insert(1.0, schema_info)
+        schema_text.config(state=tk.DISABLED)
+
+        # Close button
+        ttk.Button(
+            schema_window,
+            text="Close",
+            command=schema_window.destroy
+        ).pack(pady=10)
+
+    def get_schema_info(self):
+        """Get database schema information as formatted text"""
+        output = []
+        output.append("=" * 80)
+        output.append("DATABASE SCHEMA")
+        output.append("=" * 80)
+
+        # Query to get all tables
+        tables_query = """
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+        AND table_type = 'BASE TABLE'
+        ORDER BY table_name;
+        """
+
+        result = utils.run_user_query(tables_query)
+
+        if not result["success"]:
+            return f"Error fetching schema: {result['error']}"
+
+        tables = [row[0] for row in result["results"]]
+
+        for table in tables:
+            # Get column information for each table
+            columns_query = f"""
+            SELECT
+                column_name,
+                data_type,
+                character_maximum_length,
+                is_nullable,
+                column_default
+            FROM information_schema.columns
+            WHERE table_name = '{table}'
+            ORDER BY ordinal_position;
+            """
+
+            col_result = utils.run_user_query(columns_query)
+
+            if col_result["success"]:
+                output.append(f"\n📋 Table: {table.upper()}")
+                output.append("-" * 80)
+
+                for col in col_result["results"]:
+                    col_name = col[0]
+                    data_type = col[1]
+                    max_length = col[2]
+                    nullable = col[3]
+                    default = col[4]
+
+                    type_str = data_type
+                    if max_length:
+                        type_str += f"({max_length})"
+
+                    null_str = "NULL" if nullable == "YES" else "NOT NULL"
+                    default_str = f" DEFAULT {default}" if default else ""
+
+                    output.append(f"  • {col_name:30} {type_str:20} {null_str}{default_str}")
+
+        # Get row counts
+        output.append("\n" + "=" * 80)
+        output.append("TABLE ROW COUNTS")
+        output.append("=" * 80)
+
+        for table in tables:
+            count_query = f"SELECT COUNT(*) FROM {table};"
+            count_result = utils.run_user_query(count_query)
+
+            if count_result["success"]:
+                count = count_result["results"][0][0]
+                output.append(f"  {table:35} {count:>10} rows")
+
+        output.append("=" * 80)
+
+        return "\n".join(output)
+
     def show_about(self):
         """Show about dialog"""
         about_text = """SQL Interview Prep App
@@ -618,6 +928,7 @@ Features:
 • Real-time query validation
 • Instant feedback
 • Statistics tracking
+• SQL Sandbox for free exploration
 
 Created for SQL interview preparation.
         """

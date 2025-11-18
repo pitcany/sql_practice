@@ -6,6 +6,8 @@ A PostgreSQL-based application for practicing SQL interview questions. Available
 
 - **30+ Curated Questions**: Questions ranging from easy to hard, covering all major SQL concepts
 - **Dual Interface**: Choose between CLI (command-line) or GUI (graphical) interface
+- **SQL Sandbox**: Free query mode to explore and experiment with the database
+- **Schema Viewer**: View complete database structure with table definitions and row counts
 - **Real-time Validation**: Instant feedback on query correctness
 - **Comprehensive Database**: Realistic toy database with multiple related tables
 - **Statistics Tracking**: Monitor your progress with built-in statistics
@@ -156,8 +158,7 @@ This will create the following tables with sample data:
 3. Confirm the setup by typing `yes`
 4. Test connection with option **6** (Test Database Connection)
 
-### CLI Main Menu Options
-
+**Starting the CLI:**
 ```bash
 python app.py
 ```
@@ -169,9 +170,27 @@ chmod +x app.py
 ./app.py
 ```
 
+### CLI Main Menu Options
+
+1. **Browse Questions**: View and select from all available questions
+2. **Practice by Difficulty**: Filter questions by Easy, Medium, or Hard
+3. **Random Question**: Get a random question to practice
+4. **View Statistics**: See your practice stats (attempted, correct, accuracy)
+5. **SQL Sandbox**: Free query mode - run any SQL query against the database
+6. **View Database Schema**: Display all table structures, columns, and row counts
+7. **Setup Database**: Initialize or reset the database
+8. **Test Database Connection**: Verify your database connection
+9. **Exit**: Exit the application
+
 ### CLI - Practicing Questions
 
-### Main Menu Options
+1. Select a question from the menu
+2. Read the description and optional hint
+3. Type your SQL query (multi-line supported)
+4. Type `END` on a new line when finished
+5. Get instant feedback on correctness
+6. View expected results if incorrect
+7. See the solution if needed
 
 ### CLI Example Session
 
@@ -183,62 +202,70 @@ SQL INTERVIEW PREP - Main Menu
 2. Practice by Difficulty
 3. Random Question
 4. View Statistics
-5. Setup Database
-6. Test Database Connection
-7. Exit
+5. SQL Sandbox (Free Query Mode)
+6. View Database Schema
+7. Setup Database
+8. Test Database Connection
+9. Exit
+============================================================
+
+Enter your choice (1-9): 2
+
+Select difficulty:
+1. Easy
+2. Medium
+3. Hard
+
+Enter choice (1-3): 1
+
+[List of easy questions displayed]
+
+Enter question number to practice: 1
+
+============================================================
+🟢 Question #1: Select All Employees
+============================================================
+
+Difficulty: EASY
+Topics: basic select
+
+Write a query to select all columns from the employees table.
+
+Show hint? (y/n): n
+
+------------------------------------------------------------
+Enter your SQL query (type 'END' on a new line when done):
+SELECT * FROM employees;
+END
+
+⏳ Executing your query...
+✓ Query executed successfully!
+
+📊 Your Results:
+[Table with results displayed]
+
+============================================================
+RESULTS
+============================================================
+✅ CORRECT! Your query produces the expected results!
 ============================================================
 ```
-
-### Option 1: Browse Questions
-
-- View all available questions with their difficulty levels
-- Select any question by number to practice
-- Questions show topics like "basic select", "joins", "aggregation", etc.
-
-### Option 2: Practice by Difficulty
-
-- Filter questions by difficulty: Easy, Medium, or Hard
-- Perfect for progressive learning
-- Start with Easy questions and work your way up
-
-### Option 3: Random Question
-
-- Get a random question from all difficulty levels
-- Great for testing your overall knowledge
-- Keeps practice sessions unpredictable
-
-### Option 4: View Statistics
-
-- See how many questions you've attempted
-- Track correct vs. incorrect answers
-- Monitor your accuracy percentage
-
-### Option 5: Setup Database
-
-- Initialize or reset the database with sample data
-- **Warning**: This will drop all existing tables and recreate them
-- Use this if you need a fresh start
-
-### Option 6: Test Database Connection
-
-- Verify your database connection is working
-- Displays PostgreSQL version information
-- Useful for troubleshooting connection issues
-
-### Answering Questions
 
 ### GUI Version Features
 
 The GUI version provides a modern, user-friendly interface with the following features:
 
 **Main Window Components:**
-- **Question Browser**: Left panel with difficulty filters and statistics
-- **Question Details**: Display of question title, difficulty, topics, and description
+- **Tabbed Interface**: Switch between "Practice Questions" and "SQL Sandbox" tabs
+- **Question Browser**: Left panel with difficulty filters and statistics (Practice tab)
+- **Question Details**: Display of question title, difficulty, topics, and description (Practice tab)
+- **SQL Sandbox**: Free query mode with sample queries and schema viewer (Sandbox tab)
 - **Query Editor**: Multi-line SQL editor with syntax support
 - **Results Display**: Table view of query results with scrolling
 - **Real-time Feedback**: Instant validation with color-coded status messages
 
 **Menu Options:**
+- **Database → View Schema**: Display complete database schema in a popup window
 - **Database → Setup Database**: Initialize or reset the database
 - **Database → Test Connection**: Verify database connectivity
 - **Help → About**: View application information
@@ -249,6 +276,8 @@ The GUI version provides a modern, user-friendly interface with the following fe
 - Show hints for each question
 - Run queries with instant feedback
 - View solutions in a separate window
+- **SQL Sandbox** with sample queries dropdown
+- **Schema Viewer** showing all tables, columns, and types
 - Color-coded difficulty indicators:
   - 🟢 Green for Easy
   - 🟡 Yellow/Orange for Medium
@@ -273,46 +302,131 @@ The GUI version provides a modern, user-friendly interface with the following fe
 - Use Ctrl+A to select all text
 - Use Ctrl+Z to undo
 
-## Database Schema
+### SQL Sandbox Mode
 
-1. **Read the Question**: Carefully read the description
-2. **View Hint** (Optional): Type `y` if you need a hint
-3. **Write Your Query**: Enter your SQL query line by line
-4. **Submit**: Type `END` on a new line when finished
-5. **Get Feedback**: See your results compared to expected output
+Both CLI and GUI versions include a **SQL Sandbox** for free-form query exploration.
 
-#### Special Commands While Answering
+**CLI Sandbox:**
+- Select option **5** from the main menu
+- Type any SQL query (multi-line supported)
+- Type `END` when finished to execute
+- Type `SCHEMA` to view database schema
+- Type `BACK` to return to main menu
+- Type `CLEAR` to clear the screen
 
-- **`END`**: Submit your query
-- **`SKIP`**: Skip the current question
-- **`SOLUTION`**: View the correct solution
+**GUI Sandbox:**
+- Click on the **"SQL Sandbox"** tab
+- Use the query editor to write any SQL
+- Click **"View Schema"** button to see table structures
+- Select from **Sample Queries** dropdown for quick examples
+- Click **"Execute Query"** to run
+- Results display in a scrollable table below
 
-#### Example Session
-
+**Sample Queries to Try:**
 ```sql
--- Question: Find employees with salary > 80000
+-- Explore employees and their departments
+SELECT e.first_name, e.last_name, d.name AS department, e.salary
+FROM employees e
+JOIN departments d ON e.department_id = d.id
+ORDER BY e.salary DESC;
 
-SELECT first_name, last_name, salary
-FROM employees
-WHERE salary > 80000
-ORDER BY salary DESC;
-END
+-- Find top customers by spending
+SELECT c.name, SUM(o.quantity * p.price) AS total_spent
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+JOIN products p ON o.product_id = p.product_id
+GROUP BY c.customer_id, c.name
+ORDER BY total_spent DESC;
+
+-- Employee hierarchy (manager relationships)
+SELECT
+    e.first_name || ' ' || e.last_name AS employee,
+    m.first_name || ' ' || m.last_name AS manager
+FROM employees e
+LEFT JOIN employees m ON e.manager_id = m.id;
+
+-- Window function example - ranking
+SELECT
+    first_name,
+    last_name,
+    department_id,
+    salary,
+    RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) AS dept_rank
+FROM employees;
 ```
 
-### Understanding Results
+## Database Schema
 
-After submitting your query, you'll see:
+The application includes comprehensive sample data across multiple tables:
 
-1. **Your Results**: A formatted table of your query output
-2. **Comparison**:
-   - ✅ **CORRECT**: Your query matches expected results
-   - ❌ **INCORRECT**: Differences are highlighted
-3. **Details** (if incorrect):
-   - Column name mismatches
-   - Row count differences
-   - Expected results displayed
+### Tables
 
-## Project Structure
+- **departments**: Company departments with budgets and locations
+- **employees**: Employee information with salaries, hire dates, and manager relationships
+- **projects**: Company projects with dates, budgets, and status
+- **employee_projects**: Many-to-many relationship between employees and projects
+- **customers**: Customer information
+- **products**: Product catalog with prices and categories
+- **orders**: Customer orders
+
+### Sample Queries
+
+```sql
+-- Get average salary by department
+SELECT d.name, AVG(e.salary) AS avg_salary
+FROM employees e
+JOIN departments d ON e.department_id = d.id
+GROUP BY d.id, d.name;
+
+-- Find customers who never ordered
+SELECT c.name
+FROM customers c
+LEFT JOIN orders o ON c.customer_id = o.customer_id
+WHERE o.order_id IS NULL;
+
+-- Rank employees by salary within department (Window Function)
+SELECT
+    first_name || ' ' || last_name AS employee_name,
+    salary,
+    RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) AS rank
+FROM employees;
+```
+
+## Question Difficulty Levels
+
+### Easy (10 Questions)
+- Basic SELECT statements
+- Filtering with WHERE
+- Sorting with ORDER BY
+- Simple aggregations (COUNT, AVG, SUM)
+- DISTINCT and LIMIT
+
+### Medium (10 Questions)
+- INNER and LEFT JOINs
+- GROUP BY with multiple columns
+- Subqueries
+- Self-joins
+- Date functions
+- Complex filtering
+
+### Hard (10 Questions)
+- Window functions (RANK, ROW_NUMBER, LAG, LEAD)
+- Recursive CTEs
+- Advanced aggregations
+- Pivot tables
+- Complex multi-table joins
+- Performance optimization
+
+## Tips for Success
+
+1. **Read Carefully**: Understand what the question is asking before writing your query
+2. **Use Hints Wisely**: Try to solve without hints first, then use them if stuck
+3. **Test Incrementally**: Build your query step by step
+4. **Learn from Solutions**: Study the provided solutions to learn best practices
+5. **Practice Regularly**: Consistent practice improves retention
+6. **Experiment**: Try different approaches to solve the same problem
+
+## Project Structure (Detailed)
 
 ```
 sql_practice/
