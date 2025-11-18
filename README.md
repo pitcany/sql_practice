@@ -6,6 +6,8 @@ A PostgreSQL-based application for practicing SQL interview questions. Available
 
 - **30+ Curated Questions**: Questions ranging from easy to hard, covering all major SQL concepts
 - **Dual Interface**: Choose between CLI (command-line) or GUI (graphical) interface
+- **SQL Sandbox**: Free query mode to explore and experiment with the database
+- **Schema Viewer**: View complete database structure with table definitions and row counts
 - **Real-time Validation**: Instant feedback on query correctness
 - **Comprehensive Database**: Realistic toy database with multiple related tables
 - **Statistics Tracking**: Monitor your progress with built-in statistics
@@ -137,9 +139,11 @@ python app.py
 2. **Practice by Difficulty**: Filter questions by Easy, Medium, or Hard
 3. **Random Question**: Get a random question to practice
 4. **View Statistics**: See your practice stats (attempted, correct, accuracy)
-5. **Setup Database**: Initialize or reset the database
-6. **Test Database Connection**: Verify your database connection
-7. **Exit**: Exit the application
+5. **SQL Sandbox**: Free query mode - run any SQL query against the database
+6. **View Database Schema**: Display all table structures, columns, and row counts
+7. **Setup Database**: Initialize or reset the database
+8. **Test Database Connection**: Verify your database connection
+9. **Exit**: Exit the application
 
 ### CLI - Practicing Questions
 
@@ -212,13 +216,16 @@ RESULTS
 The GUI version provides a modern, user-friendly interface with the following features:
 
 **Main Window Components:**
-- **Question Browser**: Left panel with difficulty filters and statistics
-- **Question Details**: Display of question title, difficulty, topics, and description
+- **Tabbed Interface**: Switch between "Practice Questions" and "SQL Sandbox" tabs
+- **Question Browser**: Left panel with difficulty filters and statistics (Practice tab)
+- **Question Details**: Display of question title, difficulty, topics, and description (Practice tab)
+- **SQL Sandbox**: Free query mode with sample queries and schema viewer (Sandbox tab)
 - **Query Editor**: Multi-line SQL editor with syntax support
 - **Results Display**: Table view of query results with scrolling
 - **Real-time Feedback**: Instant validation with color-coded status messages
 
 **Menu Options:**
+- **Database → View Schema**: Display complete database schema in a popup window
 - **Database → Setup Database**: Initialize or reset the database
 - **Database → Test Connection**: Verify database connectivity
 - **Help → About**: View application information
@@ -229,6 +236,8 @@ The GUI version provides a modern, user-friendly interface with the following fe
 - Show hints for each question
 - Run queries with instant feedback
 - View solutions in a separate window
+- **SQL Sandbox** with sample queries dropdown
+- **Schema Viewer** showing all tables, columns, and types
 - Color-coded difficulty indicators:
   - 🟢 Green for Easy
   - 🟡 Yellow/Orange for Medium
@@ -252,6 +261,59 @@ The GUI version provides a modern, user-friendly interface with the following fe
 - The query editor supports standard text editing shortcuts
 - Use Ctrl+A to select all text
 - Use Ctrl+Z to undo
+
+### SQL Sandbox Mode
+
+Both CLI and GUI versions include a **SQL Sandbox** for free-form query exploration.
+
+**CLI Sandbox:**
+- Select option **5** from the main menu
+- Type any SQL query (multi-line supported)
+- Type `END` when finished to execute
+- Type `SCHEMA` to view database schema
+- Type `BACK` to return to main menu
+- Type `CLEAR` to clear the screen
+
+**GUI Sandbox:**
+- Click on the **"SQL Sandbox"** tab
+- Use the query editor to write any SQL
+- Click **"View Schema"** button to see table structures
+- Select from **Sample Queries** dropdown for quick examples
+- Click **"Execute Query"** to run
+- Results display in a scrollable table below
+
+**Sample Queries to Try:**
+```sql
+-- Explore employees and their departments
+SELECT e.first_name, e.last_name, d.name AS department, e.salary
+FROM employees e
+JOIN departments d ON e.department_id = d.id
+ORDER BY e.salary DESC;
+
+-- Find top customers by spending
+SELECT c.name, SUM(o.quantity * p.price) AS total_spent
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+JOIN products p ON o.product_id = p.product_id
+GROUP BY c.customer_id, c.name
+ORDER BY total_spent DESC;
+
+-- Employee hierarchy (manager relationships)
+SELECT
+    e.first_name || ' ' || e.last_name AS employee,
+    m.first_name || ' ' || m.last_name AS manager
+FROM employees e
+LEFT JOIN employees m ON e.manager_id = m.id;
+
+-- Window function example - ranking
+SELECT
+    first_name,
+    last_name,
+    department_id,
+    salary,
+    RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) AS dept_rank
+FROM employees;
+```
 
 ## Database Schema
 
