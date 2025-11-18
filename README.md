@@ -1,13 +1,14 @@
 # SQL Interview Prep App
 
-A PostgreSQL-based command-line application for practicing SQL interview questions. This app provides a comprehensive environment for learning and mastering SQL queries, from basic SELECT statements to advanced window functions and recursive CTEs.
+A PostgreSQL-based application for practicing SQL interview questions. Available in both **CLI** and **GUI** versions, this app provides a comprehensive environment for learning and mastering SQL queries, from basic SELECT statements to advanced window functions and recursive CTEs.
 
 ## Features
 
 - **30+ Curated Questions**: Questions ranging from easy to hard, covering all major SQL concepts
-- **Interactive CLI**: User-friendly command-line interface for practicing questions
+- **Dual Interface**: Choose between CLI (command-line) or GUI (graphical) interface
 - **Real-time Validation**: Instant feedback on query correctness
 - **Comprehensive Database**: Realistic toy database with multiple related tables
+- **Statistics Tracking**: Monitor your progress with built-in statistics
 - **Topics Coverage**:
   - Basic SELECT, filtering, and sorting
   - JOINs (INNER, LEFT, self-joins)
@@ -23,7 +24,8 @@ A PostgreSQL-based command-line application for practicing SQL interview questio
 ```
 sql_interview_prep/
 │
-├── app.py                   # Main application with interactive CLI
+├── app.py                   # CLI application (command-line interface)
+├── app_gui.py              # GUI application (graphical interface)
 ├── utils.py                 # Helper functions for database operations
 ├── requirements.txt         # Python dependencies
 ├── setup_db.sql            # Database schema and sample data
@@ -101,20 +103,35 @@ POSTGRES_PORT=5432
 
 ## Usage
 
+You can use either the **CLI** (command-line) or **GUI** (graphical) version of the application.
+
 ### Starting the Application
 
+**GUI Version (Recommended for Beginners):**
+```bash
+python app_gui.py
+```
+
+**CLI Version:**
 ```bash
 python app.py
 ```
 
 ### First-Time Setup
 
+**For GUI Version:**
+1. Launch the app: `python app_gui.py`
+2. Go to **Database → Setup Database** in the menu
+3. Confirm the setup by clicking **Yes**
+4. Test connection with **Database → Test Connection**
+
+**For CLI Version:**
 1. Launch the app: `python app.py`
 2. Select option **5** (Setup Database)
 3. Confirm the setup by typing `yes`
 4. Test connection with option **6** (Test Database Connection)
 
-### Main Menu Options
+### CLI Main Menu Options
 
 1. **Browse Questions**: View and select from all available questions
 2. **Practice by Difficulty**: Filter questions by Easy, Medium, or Hard
@@ -124,7 +141,7 @@ python app.py
 6. **Test Database Connection**: Verify your database connection
 7. **Exit**: Exit the application
 
-### Practicing Questions
+### CLI - Practicing Questions
 
 1. Select a question from the menu
 2. Read the description and optional hint
@@ -134,7 +151,7 @@ python app.py
 6. View expected results if incorrect
 7. See the solution if needed
 
-### Example Session
+### CLI Example Session
 
 ```
 SQL INTERVIEW PREP - Main Menu
@@ -189,6 +206,52 @@ RESULTS
 ✅ CORRECT! Your query produces the expected results!
 ============================================================
 ```
+
+### GUI Version Features
+
+The GUI version provides a modern, user-friendly interface with the following features:
+
+**Main Window Components:**
+- **Question Browser**: Left panel with difficulty filters and statistics
+- **Question Details**: Display of question title, difficulty, topics, and description
+- **Query Editor**: Multi-line SQL editor with syntax support
+- **Results Display**: Table view of query results with scrolling
+- **Real-time Feedback**: Instant validation with color-coded status messages
+
+**Menu Options:**
+- **Database → Setup Database**: Initialize or reset the database
+- **Database → Test Connection**: Verify database connectivity
+- **Help → About**: View application information
+
+**Features:**
+- Filter questions by difficulty (All, Easy, Medium, Hard)
+- View statistics (attempted, correct, incorrect, accuracy)
+- Show hints for each question
+- Run queries with instant feedback
+- View solutions in a separate window
+- Color-coded difficulty indicators:
+  - 🟢 Green for Easy
+  - 🟡 Yellow/Orange for Medium
+  - 🔴 Red for Hard
+- Tabular display of query results
+- Error messages with detailed feedback
+
+**How to Use the GUI:**
+
+1. **Launch the GUI**: Run `python app_gui.py`
+2. **Setup Database** (first time): Go to Database → Setup Database
+3. **Select a Question**: Click on any question from the list
+4. **Read the Question**: Review the description and topics
+5. **Optional Hint**: Click "Show Hint" if you need help
+6. **Write Your Query**: Enter your SQL query in the editor
+7. **Run Query**: Click "Run Query" button
+8. **View Results**: See your results and validation status
+9. **Check Solution**: If stuck, click "Show Solution"
+
+**Keyboard Tips:**
+- The query editor supports standard text editing shortcuts
+- Use Ctrl+A to select all text
+- Use Ctrl+Z to undo
 
 ## Database Schema
 
