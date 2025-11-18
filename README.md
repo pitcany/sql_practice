@@ -51,8 +51,17 @@ psql -U postgres
 CREATE DATABASE interview_db;
 CREATE USER sql_interview WITH PASSWORD 'your_password';
 GRANT ALL PRIVILEGES ON DATABASE interview_db TO sql_interview;
+
+# Connect to the new database
+\c interview_db
+
+# Grant schema privileges (required for PostgreSQL 15+)
+GRANT CREATE ON SCHEMA public TO sql_interview;
+GRANT USAGE ON SCHEMA public TO sql_interview;
 \q
 ```
+
+**Note**: The schema privilege grants are essential for PostgreSQL 15 and later versions, which removed default CREATE privileges on the `public` schema for security reasons.
 
 #### Option B: Using pgAdmin
 
@@ -61,6 +70,11 @@ GRANT ALL PRIVILEGES ON DATABASE interview_db TO sql_interview;
 3. Name: `interview_db`
 4. Create a new user: `sql_interview` with password
 5. Grant all privileges on the database to this user
+6. **Important for PostgreSQL 15+**: Open the Query Tool and run:
+   ```sql
+   GRANT CREATE ON SCHEMA public TO sql_interview;
+   GRANT USAGE ON SCHEMA public TO sql_interview;
+   ```
 
 ### 4. Configure Environment Variables
 
@@ -349,15 +363,44 @@ pip3 install -r requirements.txt
 
 ### Permission Denied Errors
 
-**Cause**: Insufficient database privileges
+#### "permission denied for schema public" (PostgreSQL 15+)
+
+**Cause**: PostgreSQL 15 and later versions removed default CREATE privileges on the `public` schema as a security enhancement. This is a breaking change from earlier versions.
+
+**Symptoms**:
+- Error message: `permission denied for schema public`
+- Occurs when running the database setup (option 5 in the app)
+- Tables cannot be created even though the user exists
+
+**Solution**:
+```bash
+# Connect to the database (without specifying a user, uses your system user)
+psql -d interview_db
+
+# Grant necessary schema privileges
+GRANT CREATE ON SCHEMA public TO sql_interview;
+GRANT USAGE ON SCHEMA public TO sql_interview;
+
+# If needed, reset the user password
+ALTER USER sql_interview WITH PASSWORD 'your_password';
+```
+
+**Why this happens**: Prior to PostgreSQL 15, all users had CREATE privilege on the `public` schema by default through the `PUBLIC` role. This was changed for security reasons, requiring explicit privilege grants.
+
+#### General Permission Issues
+
+**Cause**: Other insufficient database privileges
 
 **Solution**:
 ```sql
 -- Connect as superuser
 psql -U postgres
 
--- Grant privileges
+-- Grant database-level privileges
 GRANT ALL PRIVILEGES ON DATABASE interview_db TO sql_interview;
+
+-- Grant privileges on existing tables and sequences (if any)
+\c interview_db
 GRANT ALL ON ALL TABLES IN SCHEMA public TO sql_interview;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO sql_interview;
 ```
