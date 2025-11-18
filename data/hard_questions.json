@@ -1,0 +1,102 @@
+[
+    {
+        "id": 21,
+        "title": "Running Total of Orders by Date",
+        "description": "Write a query to calculate a running total of order revenue (quantity * price) by order date. Use window functions.",
+        "hint": "Use SUM() OVER (ORDER BY ...) for running total",
+        "difficulty": "hard",
+        "topics": ["window functions", "aggregation"],
+        "solution": "SELECT o.order_date::date, SUM(o.quantity * p.price) AS daily_revenue, SUM(SUM(o.quantity * p.price)) OVER (ORDER BY o.order_date::date) AS running_total FROM orders o JOIN products p ON o.product_id = p.product_id GROUP BY o.order_date::date ORDER BY o.order_date::date;",
+        "expected_columns": ["order_date", "daily_revenue", "running_total"]
+    },
+    {
+        "id": 22,
+        "title": "Rank Employees by Salary within Department",
+        "description": "Write a query to rank employees by salary within their department. Use RANK() or ROW_NUMBER().",
+        "hint": "Use RANK() OVER (PARTITION BY department ORDER BY salary DESC)",
+        "difficulty": "hard",
+        "topics": ["window functions", "ranking"],
+        "solution": "SELECT e.first_name || ' ' || e.last_name AS employee_name, d.name AS department, e.salary, RANK() OVER (PARTITION BY e.department_id ORDER BY e.salary DESC) AS salary_rank FROM employees e JOIN departments d ON e.department_id = d.id ORDER BY d.name, salary_rank;",
+        "expected_columns": ["employee_name", "department", "salary", "salary_rank"]
+    },
+    {
+        "id": 23,
+        "title": "Find Employees with Above-Average Department Salary",
+        "description": "Write a query to find employees whose salary is above the average salary of their department.",
+        "hint": "Use subquery or window function to calculate department average",
+        "difficulty": "hard",
+        "topics": ["subqueries", "window functions"],
+        "solution": "SELECT e.first_name || ' ' || e.last_name AS employee_name, d.name AS department, e.salary, dept_avg.avg_salary FROM employees e JOIN departments d ON e.department_id = d.id JOIN (SELECT department_id, AVG(salary) AS avg_salary FROM employees GROUP BY department_id) dept_avg ON e.department_id = dept_avg.department_id WHERE e.salary > dept_avg.avg_salary ORDER BY d.name, e.salary DESC;",
+        "expected_columns": ["employee_name", "department", "salary", "avg_salary"]
+    },
+    {
+        "id": 24,
+        "title": "Month-over-Month Revenue Growth",
+        "description": "Write a query to calculate month-over-month revenue growth. Show month, revenue, and percentage change from previous month.",
+        "hint": "Use LAG() window function to get previous month's revenue",
+        "difficulty": "hard",
+        "topics": ["window functions", "date functions", "calculations"],
+        "solution": "WITH monthly_revenue AS (SELECT DATE_TRUNC('month', o.order_date) AS month, SUM(o.quantity * p.price) AS revenue FROM orders o JOIN products p ON o.product_id = p.product_id GROUP BY DATE_TRUNC('month', o.order_date)) SELECT month, revenue, LAG(revenue) OVER (ORDER BY month) AS prev_month_revenue, ROUND(((revenue - LAG(revenue) OVER (ORDER BY month)) / LAG(revenue) OVER (ORDER BY month) * 100), 2) AS growth_percentage FROM monthly_revenue ORDER BY month;",
+        "expected_columns": ["month", "revenue", "prev_month_revenue", "growth_percentage"]
+    },
+    {
+        "id": 25,
+        "title": "Top 3 Products per Category by Revenue",
+        "description": "Write a query to find the top 3 products by revenue in each category.",
+        "hint": "Use ROW_NUMBER() with PARTITION BY category",
+        "difficulty": "hard",
+        "topics": ["window functions", "subqueries"],
+        "solution": "WITH product_revenue AS (SELECT p.product_id, p.name, p.category, SUM(o.quantity * p.price) AS total_revenue, ROW_NUMBER() OVER (PARTITION BY p.category ORDER BY SUM(o.quantity * p.price) DESC) AS rank FROM products p JOIN orders o ON p.product_id = o.product_id GROUP BY p.product_id, p.name, p.category) SELECT name, category, total_revenue, rank FROM product_revenue WHERE rank <= 3 ORDER BY category, rank;",
+        "expected_columns": ["name", "category", "total_revenue", "rank"]
+    },
+    {
+        "id": 26,
+        "title": "Employee Project Workload Analysis",
+        "description": "Write a query to find employees working on more than one project, showing their total hours allocated across all projects.",
+        "hint": "Join employee_projects with employees, use GROUP BY and HAVING",
+        "difficulty": "hard",
+        "topics": ["joins", "aggregation", "having"],
+        "solution": "SELECT e.first_name || ' ' || e.last_name AS employee_name, COUNT(ep.project_id) AS project_count, SUM(ep.hours_allocated) AS total_hours FROM employees e JOIN employee_projects ep ON e.id = ep.employee_id GROUP BY e.id, e.first_name, e.last_name HAVING COUNT(ep.project_id) > 1 ORDER BY total_hours DESC;",
+        "expected_columns": ["employee_name", "project_count", "total_hours"]
+    },
+    {
+        "id": 27,
+        "title": "Recursive Employee Hierarchy",
+        "description": "Write a recursive query to show the full management chain for each employee (employee -> manager -> manager's manager, etc.).",
+        "hint": "Use WITH RECURSIVE to traverse the manager hierarchy",
+        "difficulty": "hard",
+        "topics": ["recursive CTE", "self-join"],
+        "solution": "WITH RECURSIVE employee_hierarchy AS (SELECT id, first_name, last_name, manager_id, first_name || ' ' || last_name AS path, 0 AS level FROM employees WHERE manager_id IS NULL UNION ALL SELECT e.id, e.first_name, e.last_name, e.manager_id, eh.path || ' -> ' || e.first_name || ' ' || e.last_name, eh.level + 1 FROM employees e JOIN employee_hierarchy eh ON e.manager_id = eh.id) SELECT id, first_name || ' ' || last_name AS employee_name, level, path FROM employee_hierarchy ORDER BY level, last_name;",
+        "expected_columns": ["id", "employee_name", "level", "path"]
+    },
+    {
+        "id": 28,
+        "title": "Customers Who Ordered All Categories",
+        "description": "Write a query to find customers who have ordered products from all categories.",
+        "hint": "Use GROUP BY and HAVING with COUNT DISTINCT",
+        "difficulty": "hard",
+        "topics": ["joins", "aggregation", "having"],
+        "solution": "SELECT c.name, COUNT(DISTINCT p.category) AS categories_ordered FROM customers c JOIN orders o ON c.customer_id = o.customer_id JOIN products p ON o.product_id = p.product_id GROUP BY c.customer_id, c.name HAVING COUNT(DISTINCT p.category) = (SELECT COUNT(DISTINCT category) FROM products) ORDER BY c.name;",
+        "expected_columns": ["name", "categories_ordered"]
+    },
+    {
+        "id": 29,
+        "title": "Product Pair Analysis",
+        "description": "Write a query to find pairs of products that were ordered together by the same customer on the same date.",
+        "hint": "Self-join orders table on customer_id and order_date",
+        "difficulty": "hard",
+        "topics": ["self-join", "distinct"],
+        "solution": "SELECT DISTINCT p1.name AS product1, p2.name AS product2, COUNT(DISTINCT o1.customer_id) AS times_ordered_together FROM orders o1 JOIN orders o2 ON o1.customer_id = o2.customer_id AND o1.order_date::date = o2.order_date::date AND o1.product_id < o2.product_id JOIN products p1 ON o1.product_id = p1.product_id JOIN products p2 ON o2.product_id = p2.product_id GROUP BY p1.name, p2.name ORDER BY times_ordered_together DESC, product1;",
+        "expected_columns": ["product1", "product2", "times_ordered_together"]
+    },
+    {
+        "id": 30,
+        "title": "Pivot Table: Orders by Status and Month",
+        "description": "Write a query to create a pivot table showing count of orders by status for each month.",
+        "hint": "Use CASE statements with aggregation or FILTER clause",
+        "difficulty": "hard",
+        "topics": ["pivot", "aggregation", "case statements"],
+        "solution": "SELECT DATE_TRUNC('month', order_date) AS month, COUNT(*) FILTER (WHERE status = 'pending') AS pending, COUNT(*) FILTER (WHERE status = 'shipped') AS shipped, COUNT(*) FILTER (WHERE status = 'delivered') AS delivered, COUNT(*) FILTER (WHERE status = 'cancelled') AS cancelled FROM orders GROUP BY DATE_TRUNC('month', order_date) ORDER BY month;",
+        "expected_columns": ["month", "pending", "shipped", "delivered", "cancelled"]
+    }
+]

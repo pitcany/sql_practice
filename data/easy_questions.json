@@ -1,0 +1,102 @@
+[
+    {
+        "id": 1,
+        "title": "Select All Employees",
+        "description": "Write a query to select all columns from the employees table.",
+        "hint": "Use SELECT * FROM table_name",
+        "difficulty": "easy",
+        "topics": ["basic select"],
+        "solution": "SELECT * FROM employees;",
+        "expected_columns": ["id", "first_name", "last_name", "department_id", "salary", "hire_date", "manager_id"]
+    },
+    {
+        "id": 2,
+        "title": "Count All Customers",
+        "description": "Write a query to count the total number of customers.",
+        "hint": "Use COUNT(*) to count rows",
+        "difficulty": "easy",
+        "topics": ["aggregation"],
+        "solution": "SELECT COUNT(*) AS total_customers FROM customers;",
+        "expected_columns": ["total_customers"]
+    },
+    {
+        "id": 3,
+        "title": "List Unique Product Categories",
+        "description": "Write a query to find all unique product categories.",
+        "hint": "Use DISTINCT to get unique values",
+        "difficulty": "easy",
+        "topics": ["distinct"],
+        "solution": "SELECT DISTINCT category FROM products ORDER BY category;",
+        "expected_columns": ["category"]
+    },
+    {
+        "id": 4,
+        "title": "Employees with High Salaries",
+        "description": "Write a query to find all employees with a salary greater than 80000.",
+        "hint": "Use WHERE clause to filter rows",
+        "difficulty": "easy",
+        "topics": ["filtering"],
+        "solution": "SELECT first_name, last_name, salary FROM employees WHERE salary > 80000 ORDER BY salary DESC;",
+        "expected_columns": ["first_name", "last_name", "salary"]
+    },
+    {
+        "id": 5,
+        "title": "Products Sorted by Price",
+        "description": "Write a query to list all products ordered by price from highest to lowest.",
+        "hint": "Use ORDER BY column_name DESC",
+        "difficulty": "easy",
+        "topics": ["sorting"],
+        "solution": "SELECT name, price, category FROM products ORDER BY price DESC;",
+        "expected_columns": ["name", "price", "category"]
+    },
+    {
+        "id": 6,
+        "title": "Recent Orders",
+        "description": "Write a query to find the 5 most recent orders.",
+        "hint": "Use ORDER BY with LIMIT",
+        "difficulty": "easy",
+        "topics": ["sorting", "limit"],
+        "solution": "SELECT order_id, customer_id, product_id, order_date FROM orders ORDER BY order_date DESC LIMIT 5;",
+        "expected_columns": ["order_id", "customer_id", "product_id", "order_date"]
+    },
+    {
+        "id": 7,
+        "title": "Employees in Engineering",
+        "description": "Write a query to find all employees in the Engineering department (department_id = 1).",
+        "hint": "Filter by department_id",
+        "difficulty": "easy",
+        "topics": ["filtering"],
+        "solution": "SELECT first_name, last_name, salary FROM employees WHERE department_id = 1 ORDER BY last_name;",
+        "expected_columns": ["first_name", "last_name", "salary"]
+    },
+    {
+        "id": 8,
+        "title": "Average Product Price",
+        "description": "Write a query to calculate the average price of all products.",
+        "hint": "Use AVG() function",
+        "difficulty": "easy",
+        "topics": ["aggregation"],
+        "solution": "SELECT AVG(price) AS average_price FROM products;",
+        "expected_columns": ["average_price"]
+    },
+    {
+        "id": 9,
+        "title": "Orders in Pending Status",
+        "description": "Write a query to find all orders with status 'pending'.",
+        "hint": "Use WHERE status = 'pending'",
+        "difficulty": "easy",
+        "topics": ["filtering"],
+        "solution": "SELECT order_id, customer_id, product_id, order_date FROM orders WHERE status = 'pending' ORDER BY order_date;",
+        "expected_columns": ["order_id", "customer_id", "product_id", "order_date"]
+    },
+    {
+        "id": 10,
+        "title": "Customers from USA",
+        "description": "Write a query to find all customers from the USA.",
+        "hint": "Filter by country column",
+        "difficulty": "easy",
+        "topics": ["filtering"],
+        "solution": "SELECT name, email, country FROM customers WHERE country = 'USA' ORDER BY name;",
+        "expected_columns": ["name", "email", "country"]
+    }
+]
